@@ -1,37 +1,29 @@
-import { Router } from 'express';
-import Stripe from 'stripe';
-import Subscription from '../models/Subscription.js';
-import { auth } from '../middlewares/auth.js';
+import express from "express";
+import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET || '', { apiVersion: '2023-10-16' });
-const r = Router();
+const router = express.Router();
 
-r.post('/checkout', auth, async (req,res)=>{
-  const priceId = req.body.priceId || 'price_dummy';
-  if(!process.env.STRIPE_SECRET) return res.json({ url: 'https://example.com/checkout-mock' });
-  const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: (process.env.CLIENT_ORIGIN || '') + '/subscribe/success',
-    cancel_url: (process.env.CLIENT_ORIGIN || '') + '/subscribe/cancel',
-    customer_email: req.user.email
-  });
-  res.json({ url: session.url });
-});
+// Stripe secret key (use environment variable in Render dashboard)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-r.post('/webhook', express.raw({ type: 'application/json' }), async (req,res)=>{
-  const sig = req.headers['stripe-signature'];
-  let event;
+// Create a payment intent
+router.post("/create-payment-intent", async (req, res) => {
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    const { amount, currency } = req.body;
+
+    // Amount should be in smallest unit (eg: paisa for INR, cents for USD)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency,
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+    });
   } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.error("Stripe error:", err);
+    res.status(500).json({ error: err.message });
   }
-  if(event.type === 'checkout.session.completed'){
-    // TODO: mark active plan
-    await Subscription.create({ user: null, plan: 'BASIC', active: true });
-  }
-  res.json({ received: true });
 });
 
-export default r;
+export default router;
