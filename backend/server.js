@@ -1,44 +1,29 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const cors = require("cors");
+import express from "express";
+import Stripe from "stripe";
 
-// Routes
-const authRoute = require("./src/routes/auth.js");
-const userRoute = require("./src/routes/user.js");
-const movieRoute = require("./src/routes/movies.js");
-const paymentRoute = require("./src/routes/payments.js");
-const adminRoute = require("./src/routes/admin.js");
+const router = express.Router();
 
-dotenv.config();
-const app = express();
+// Stripe secret key (use environment variable in Render dashboard)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-app.use(cors());
-app.use(express.json());
+// Create a payment intent
+router.post("/create-payment-intent", async (req, res) => {
+  try {
+    const { amount, currency } = req.body;
 
-// MongoDB connect
-mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB Connected Successfully"))
-  .catch((err) => console.error("MongoDB Connection Failed:", err));
+    // Amount should be in smallest unit (eg: paisa for INR, cents for USD)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency,
+    });
 
-// API Routes
-app.use("/api/auth", authRoute);
-app.use("/api/users", userRoute);
-app.use("/api/movies", movieRoute);
-app.use("/api/payments", paymentRoute);
-app.use("/api/admin", adminRoute);
-
-// Root Test
-app.get("/", (req, res) => {
-  res.send("OTT Backend API Running 🚀");
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (err) {
+    console.error("Stripe error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Server Listen
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Backend server is running on port ${PORT}`);
-});
+export default router;
