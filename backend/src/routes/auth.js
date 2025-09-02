@@ -1,57 +1,46 @@
 const express = require("express");
-const router = express.Router();
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-// Demo user DB (later DB connect pannalam)
-const users = [];
+const router = express.Router();
 
-// Register route
+// Register
 router.post("/register", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username & Password required" });
-    }
+    // password hashing
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
-    users.push({ username, password: hashedPassword });
-
-    res.json({ message: "User registered successfully 🚀" });
+    const savedUser = await newUser.save();
+    res.status(201).json({ message: "User created ✅", user: savedUser });
   } catch (err) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Login route
+// Login
 router.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = users.find((u) => u.username === username);
+    const { email, password } = req.body;
 
-    if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" });
-    }
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: "User not found" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).json({ message: "Invalid password" });
 
-    if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
-    }
-
-    const token = jwt.sign({ username }, "secretKey", { expiresIn: "1h" });
-
-    res.json({ message: "Login success ✅", token });
+    res.json({ message: "Login successful ✅", user });
   } catch (err) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: err.message });
   }
-});
-
-// Test route
-router.get("/test", (req, res) => {
-  res.json({ message: "Auth route working fine 🚀" });
 });
 
 module.exports = router;
