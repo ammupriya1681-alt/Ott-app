@@ -3,9 +3,12 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 
-// Routes
+// Routes import
 import authRoute from "./src/routes/auth.js";
 import paymentsRoute from "./src/routes/payments.js";
+import moviesRoute from "./src/routes/movies.js";
+import userRoute from "./src/routes/user.js";
+import adminRoute from "./src/routes/admin.js";
 
 dotenv.config();
 const app = express();
@@ -26,6 +29,9 @@ mongoose
 // Routes
 app.use("/api/auth", authRoute);
 app.use("/api/payments", paymentsRoute);
+app.use("/api/movies", moviesRoute);
+app.use("/api/user", userRoute);
+app.use("/api/admin", adminRoute);
 
 // Root endpoint
 app.get("/", (req, res) => {
