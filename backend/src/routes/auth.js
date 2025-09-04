@@ -5,12 +5,14 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-// ✅ Register API
+// 👉 Register API
 router.post("/register", async (req, res) => {
+  console.log("👉 Register API body:", req.body);  // 🔍 Debug log
+
   try {
     const { username, email, password } = req.body;
 
-    // user already iruka check
+    // user already check
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: "User already exists" });
@@ -32,7 +34,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ✅ Login API
+// 👉 Login API
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -51,11 +53,13 @@ router.post("/login", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
+    res.json({
+      token,
+      user: { id: user._id, username: user.username, email: user.email },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Export router (Important!)
 export default router;
