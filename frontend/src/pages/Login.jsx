@@ -9,20 +9,20 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const res = await login(email, password);
-      setMessage("Login Success ✅");
+      setMessage("✅ Login Success");
       console.log("Login Response:", res);
     } catch (error) {
-      setMessage("Login Failed ❌");
+      setMessage("❌ Login Failed");
     }
   };
 
   const handleRegister = async () => {
     try {
       const res = await register(email, password);
-      setMessage("Register Success ✅");
+      setMessage("✅ Register Success");
       console.log("Register Response:", res);
     } catch (error) {
-      setMessage("Register Failed ❌");
+      setMessage("❌ Register Failed");
     }
   };
 
