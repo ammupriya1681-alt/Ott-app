@@ -1,31 +1,39 @@
 import axios from "axios";
 
-const API_URL = "https://ott-backend-c7cv.onrender.com/api/auth"; // backend base URL
+// Backend base URL
+const API_URL = "https://ott-backend-c7cv.onrender.com/api/auth/";
 
-// Register
+// ✅ Register
 export const register = async (email, password) => {
   try {
-    const res = await axios.post(`${API_URL}/register`, { email, password });
+    const res = await axios.post(API_URL + "register", { email, password });
     return res.data;
-  } catch (err) {
-    throw err.response?.data || { message: "Register failed" };
+  } catch (error) {
+    console.error("Register Error:", error.response?.data || error.message);
+    throw error;
   }
 };
 
-// Login
+// ✅ Login
 export const login = async (email, password) => {
   try {
-    const res = await axios.post(`${API_URL}/login`, { email, password });
+    const res = await axios.post(API_URL + "login", { email, password });
     if (res.data.token) {
       localStorage.setItem("user", JSON.stringify(res.data));
     }
     return res.data;
-  } catch (err) {
-    throw err.response?.data || { message: "Login failed" };
+  } catch (error) {
+    console.error("Login Error:", error.response?.data || error.message);
+    throw error;
   }
 };
 
-// Logout
+// ✅ Get Current User
+export const getCurrentUser = () => {
+  return JSON.parse(localStorage.getItem("user"));
+};
+
+// ✅ Logout
 export const logout = () => {
   localStorage.removeItem("user");
 };
