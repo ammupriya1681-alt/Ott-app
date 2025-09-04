@@ -1,38 +1,22 @@
-// src/services/AuthService.js
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "https://ott-backend-c7cv.onrender.com/api/auth", // backend URL
-});
+// Backend API URL (deploy panna Render backend URL use pannu)
+const API_URL = "https://ott-backend-c7cv.onrender.com/api/auth";
 
-// Register
-export const register = async (email, password) => {
-  try {
-    const res = await API.post("/register", { email, password });
-    return res.data;
-  } catch (err) {
-    throw err.response?.data || { message: "Register failed" };
-  }
-};
-
-// Login
 export const login = async (email, password) => {
   try {
-    const res = await API.post("/login", { email, password });
+    const res = await axios.post(`${API_URL}/login`, { email, password });
     return res.data;
   } catch (err) {
-    throw err.response?.data || { message: "Login failed" };
+    throw err.response?.data || { message: "Login error" };
   }
 };
 
-// Get current user (optional)
-export const getProfile = async (token) => {
+export const register = async (email, password) => {
   try {
-    const res = await API.get("/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await axios.post(`${API_URL}/register`, { email, password });
     return res.data;
   } catch (err) {
-    throw err.response?.data || { message: "Fetch user failed" };
+    throw err.response?.data || { message: "Register error" };
   }
 };
