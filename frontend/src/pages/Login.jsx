@@ -9,9 +9,12 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const res = await login(email, password);
+      console.log("✅ Login Success:", res);
+      alert("✅ Login Success: " + JSON.stringify(res));
       setMessage("✅ Login Success");
-      console.log("Login Response:", res);
     } catch (error) {
+      console.error("❌ Login Failed:", error);
+      alert("❌ Login Failed: " + error.message);
       setMessage("❌ Login Failed");
     }
   };
@@ -19,39 +22,34 @@ const Login = () => {
   const handleRegister = async () => {
     try {
       const res = await register(email, password);
+      console.log("✅ Register Success:", res);
+      alert("✅ Register Success: " + JSON.stringify(res));
       setMessage("✅ Register Success");
-      console.log("Register Response:", res);
     } catch (error) {
+      console.error("❌ Register Failed:", error);
+      alert("❌ Register Failed: " + error.message);
       setMessage("❌ Register Failed");
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       <h2>Login / Register</h2>
-
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        style={{ display: "block", margin: "10px 0", padding: "8px" }}
       />
-
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        style={{ display: "block", margin: "10px 0", padding: "8px" }}
       />
-
-      <button onClick={handleLogin} style={{ marginRight: "10px" }}>
-        Login
-      </button>
+      <button onClick={handleLogin}>Login</button>
       <button onClick={handleRegister}>Register</button>
-
-      {message && <p style={{ marginTop: "15px" }}>{message}</p>}
+      <p>{message}</p>
     </div>
   );
 };
