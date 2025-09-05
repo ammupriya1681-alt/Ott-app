@@ -1,28 +1,30 @@
 import React, { useState } from 'react'
-import { AuthService } from '../services/AuthService'
+import axios from '../lib/axios'
 
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLogin, setIsLogin] = useState(true)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      if (isLogin) {
-        await AuthService.login(email, password)
+      const response = await axios.post('/auth/login', { email, password })
+      if (response.data.token && response.data.user.role === 'admin') {
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        // Redirect to dashboard
       } else {
-        await AuthService.register(email, password)
+        alert('Admin access required')
       }
-      // Handle success (redirect, etc.)
     } catch (error) {
-      console.error('Auth error:', error)
+      console.error('Login error:', error)
+      alert('Login failed')
     }
   }
 
   return (
     <div>
-      <h2>{isLogin ? 'Login' : 'Register'}</h2>
+      <h2>Admin Login</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -38,11 +40,8 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
+        <button type="submit">Login</button>
       </form>
-      <button onClick={() => setIsLogin(!isLogin)}>
-        {isLogin ? 'Need to register?' : 'Already have account?'}
-      </button>
     </div>
   )
 }

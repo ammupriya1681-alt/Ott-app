@@ -1,21 +1,34 @@
-import axios from "axios";
+import axios from '../lib/axios'
 
-const API_URL = "https://ott-backend-c7cv.onrender.com/api/auth";
+export const AuthService = {
+  async login(email, password) {
+    const response = await axios.post('/auth/login', { email, password })
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token)
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+    }
+    return response.data
+  },
 
-export const login = async (email, password) => {
-  try {
-    const res = await axios.post(`${API_URL}/login`, { email, password });
-    return res.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Login failed" };
+  async register(email, password) {
+    const response = await axios.post('/auth/register', { email, password })
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token)
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+    }
+    return response.data
+  },
+
+  logout() {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  },
+
+  getCurrentUser() {
+    return JSON.parse(localStorage.getItem('user'))
+  },
+
+  getToken() {
+    return localStorage.getItem('token')
   }
-};
-
-export const register = async (email, password) => {
-  try {
-    const res = await axios.post(`${API_URL}/register`, { email, password });
-    return res.data;
-  } catch (error) {
-    throw error.response?.data || { message: "Register failed" };
-  }
-};
+}
